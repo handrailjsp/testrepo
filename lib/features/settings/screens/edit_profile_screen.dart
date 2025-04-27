@@ -7,16 +7,14 @@ import '../../../shared/services/api_service.dart';
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
 
-  const EditProfileScreen({
-    Key? key,
-    required this.user,
-  }) : super(key: key);
+  const EditProfileScreen({Key? key, required this.user}) : super(key: key);
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   late TextEditingController _emailController;
@@ -38,43 +36,51 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  Future<void> _updateProfile() async {
-    if (_nameController.text.isEmpty ||
-        _phoneController.text.isEmpty ||
-        _emailController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
-      return;
-    }
+  Future<void> _saveProfile() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final updatedUser = widget.user.copyWith(
-        name: _nameController.text,
-        phone: _phoneController.text,
-        email: _emailController.text,
-      );
-
-      await ApiService().updateUser(updatedUser);
-
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+      try {
+        // Create updated user model
+        final updatedUser = UserModel(
+          id: widget.user.id,
+          name: _nameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          email: _emailController.text.trim(),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+
+        // Update user profile
+        await ApiService().updateUserProfile(updatedUser);
+
+        if (mounted) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Return to profile screen with refresh flag
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating profile: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -84,38 +90,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.darkBackground,
+        elevation: 0,
         title: const Text('Edit Profile'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfilePicture(),
-            const SizedBox(height: 30),
-            _buildTextField('Name', _nameController),
-            _buildTextField('Phone Number', _phoneController),
-            _buildTextField('Email Address', _emailController),
-            const Spacer(),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-              onPressed: _updateProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                _buildProfilePicture(),
+                const SizedBox(height: 30),
+                _buildTextField(
+                  controller: _nameController,
+                  label: 'Name',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              child: const Text('Save Changes'),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _phoneController,
+                  label: 'Phone Number',
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email Address',
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 40),
+                _buildSaveButton(),
+                const SizedBox(height: 20),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
+          ),
         ),
       ),
     );
@@ -175,7 +211,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Change picture',
+            'Change profile picture',
             style: TextStyles.caption.copyWith(
               color: AppColors.primaryBlue,
             ),
@@ -185,35 +221,78 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyles.caption.copyWith(
-              color: AppColors.textGrey,
-            ),
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyles.caption.copyWith(
+            color: AppColors.textGrey,
           ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: TextStyles.body1,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.cardBackground,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
             ),
-            child: TextField(
-              controller: controller,
-              style: TextStyles.body1,
-              decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: InputBorder.none,
-              ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: AppColors.primaryBlue),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _saveProfile,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryBlue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          disabledBackgroundColor: AppColors.primaryBlue.withOpacity(0.6),
+        ),
+        child: _isLoading
+            ? const SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        )
+            : const Text(
+          'Save Changes',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'add_card_screen.dart';
 import 'card_details_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
 
 class CardsScreen extends StatelessWidget {
   const CardsScreen({Key? key}) : super(key: key);
@@ -15,7 +16,13 @@ class CardsScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            // Navigate back to dashboard instead of just popping
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DashboardScreen(),
+              ),
+            );
           },
         ),
         title: const Text(

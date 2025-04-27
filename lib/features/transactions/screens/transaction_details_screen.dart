@@ -3,23 +3,41 @@ import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/text_styles.dart';
 
 class TransactionDetailsScreen extends StatelessWidget {
-  const TransactionDetailsScreen({Key? key}) : super(key: key);
+  final String title;
+  final String subtitle;
+  final String amount;
+  final String date;
+  final IconData icon;
+  final bool isExpense;
+
+  const TransactionDetailsScreen({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.amount,
+    required this.date,
+    required this.icon,
+    required this.isExpense,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // This would normally come from a parameter or state
+    // Parse the amount string to get the numeric value
+    final amountValue = double.tryParse(
+        amount.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+
     final Map<String, dynamic> transaction = {
-      'id': 'TX123456789',
-      'title': 'Online Purchase',
-      'amount': 250.00,
-      'isExpense': true,
-      'date': 'May 15, 2023',
-      'time': '10:30 AM',
-      'category': 'Shopping',
+      'id': 'TX${DateTime.now().millisecondsSinceEpoch}',
+      'title': title,
+      'amount': amountValue,
+      'isExpense': isExpense,
+      'date': date,
+      'time': '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+      'category': isExpense ? 'Purchase' : 'Transfer',
       'paymentMethod': 'Credit Card (**** 4567)',
       'status': 'Completed',
-      'description': 'Purchase from Online Store',
-      'recipient': 'Example Store',
+      'description': subtitle,
+      'recipient': title,
     };
 
     return Scaffold(
@@ -63,14 +81,14 @@ class TransactionDetailsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
             child: Icon(
-              isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+              icon,
               color: isExpense ? AppColors.error : AppColors.success,
               size: 30,
             ),
           ),
           const SizedBox(height: 16),
           Text(
-            transaction['title'],
+            title,
             style: TextStyles.subtitle1,
           ),
           const SizedBox(height: 8),
@@ -136,7 +154,6 @@ class TransactionDetailsScreen extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () {
-            // Download receipt
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Download Receipt feature coming soon')),
             );
@@ -153,7 +170,6 @@ class TransactionDetailsScreen extends StatelessWidget {
         const SizedBox(height: 16),
         OutlinedButton(
           onPressed: () {
-            // Report issue
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Report Issue feature coming soon')),
             );

@@ -1,79 +1,63 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme/app_colors.dart';
-import '../../../config/theme/text_styles.dart';
-import 'notification_settings_screen.dart';
 import 'profile_screen.dart';
-import 'security_settings_screen.dart';
+import 'notification_settings.dart';
+import 'security_settings.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});  // Added key parameter here
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: const Color(0xFF0E0E2C),
       appBar: AppBar(
-        title: const Text('Settings'),
+        backgroundColor: const Color(0xFF0E0E2C),
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: const Text(
+          'Settings',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildSettingItem(
-              context,
-              title: 'Profile',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSettingItem(
-              context,
-              title: 'Notification Settings',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildSettingItem(
-              context,
-              title: 'Security Settings',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SecuritySettingsScreen()),
-              ),
-            ),
+            _buildButton(context, 'Profile', const ProfileScreen()),
+            const SizedBox(height: 20),
+            _buildButton(context, 'Notification Settings', const NotificationSettingsScreen()),
+            const SizedBox(height: 20),
+            _buildButton(context, 'Security Settings', const SecuritySettingsScreen()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSettingItem(
-      BuildContext context, {
-        required String title,
-        required VoidCallback onTap,
-      }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: TextStyles.subtitle1,
-          ),
+  Widget _buildButton(BuildContext context, String text, Widget screen) {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => screen),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF00114D),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
         ),
       ),
     );
