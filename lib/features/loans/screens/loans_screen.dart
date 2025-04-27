@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'eligibility_screen.dart';
 import 'loan_details_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart';
 
 class LoansScreen extends StatelessWidget {
   const LoansScreen({Key? key}) : super(key: key);
@@ -15,7 +16,13 @@ class LoansScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            // Navigate back to dashboard instead of just popping
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const DashboardScreen(),
+              ),
+            );
           },
         ),
         title: const Text(

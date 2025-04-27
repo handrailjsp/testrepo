@@ -21,11 +21,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _userFuture = ApiService().getCurrentUser();
   }
 
+  void _refreshUserData() {
+    setState(() {
+      _userFuture = ApiService().getCurrentUser();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.darkBackground,
+        elevation: 0,
         title: const Text('Profile'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -36,21 +44,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
         future: _userFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primaryBlue,
+              ),
+            );
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 60,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading profile',
+                    style: TextStyles.subtitle1,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: TextStyles.body2.copyWith(color: AppColors.textGrey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _refreshUserData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
-          final user = snapshot.data ?? UserModel(
-            id: '1',
-            name: 'M',
-            email: 'john.doe@gmail.com',
-            phone: 'Doe',
-          );
+          final user = snapshot.data!;
 
-          return Padding(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,31 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildProfileItem('Name', user.name),
                 _buildProfileItem('Phone Number', user.phone),
                 _buildProfileItem('Email Address', user.email),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditProfileScreen(user: user),
-                      ),
-                    );
-
-                    if (result == true) {
-                      setState(() {
-                        _userFuture = ApiService().getCurrentUser();
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                  child: const Text('Update Account Information'),
-                ),
+                const SizedBox(height: 40),
+                _buildEditButton(user),
                 const SizedBox(height: 20),
               ],
             ),
@@ -124,10 +141,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               bottom: 0,
               child: GestureDetector(
                 onTap: () {
-                  // Show image picker
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Image picker will be shown here')),
-                  );
+                  // Navigate to edit profile screen
+                  _navigateToEditProfile(user);
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
@@ -147,10 +162,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        Text(
-          'Edit picture',
-          style: TextStyles.caption.copyWith(
-            color: AppColors.primaryBlue,
+        GestureDetector(
+          onTap: () {
+            // Navigate to edit profile screen
+            _navigateToEditProfile(user);
+          },
+          child: Text(
+            'Edit profile',
+            style: TextStyles.caption.copyWith(
+              color: AppColors.primaryBlue,
+            ),
           ),
         ),
       ],
@@ -186,5 +207,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildEditButton(UserModel user) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: () => _navigateToEditProfile(user),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryBlue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+        ),
+        child: const Text(
+          'Edit Profile',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _navigateToEditProfile(UserModel user) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfileScreen(user: user),
+      ),
+    );
+
+    if (result == true) {
+      _refreshUserData();
+    }
   }
 }
