@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../features/dashboard/screens/dashboard_screen.dart';
+import '../features/onboarding/screens/splash_screen.dart';
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
@@ -27,8 +27,27 @@ class App extends StatelessWidget {
           primary: const Color(0xFF2D7BF0),
           secondary: const Color(0xFF2D7BF0),
         ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E1E1E),
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF1E1E1E),
+          selectedItemColor: Color(0xFF2D7BF0),
+          unselectedItemColor: Color(0xFF9E9E9E),
+          type: BottomNavigationBarType.fixed,
+        ),
       ),
-      home: const DashboardScreen(),
+      home: const SplashScreen(), // Changed from DashboardScreen to SplashScreen
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/text_styles.dart';
-import 'otp_screen.dart';
+import '../../onboarding/screens/otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,116 +24,153 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final inputDecoration = InputDecoration(
+      filled: true,
+      fillColor: const Color(0xFF041C5C),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      hintStyle: const TextStyle(color: Colors.white),
+      labelStyle: const TextStyle(color: Color(0xFF2F6BFF)),
+    );
+
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
-              Text(
-                'Welcome to\nCha-Ching',
-                style: TextStyles.heading1,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Sign in to continue',
-                style: TextStyles.body1,
-              ),
-              const SizedBox(height: 40),
-              _buildLoginForm(),
-              const SizedBox(height: 40),
-              _buildSignUpText(),
-            ],
-          ),
+      backgroundColor: const Color(0xFF0E0E2C),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0E0E2C),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
-    );
-  }
-
-  Widget _buildLoginForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextFormField(
-          controller: _phoneController,
-          decoration: const InputDecoration(
-            labelText: 'Phone Number',
-            prefixIcon: Icon(Icons.phone),
-          ),
-          keyboardType: TextInputType.phone,
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _passwordController,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            prefixIcon: const Icon(Icons.lock),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword ? Icons.visibility : Icons.visibility_off,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
-            ),
-          ),
-          obscureText: _obscurePassword,
-        ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {},
-            child: Text(
-              'Forgot Password?',
-              style: TextStyles.body2.copyWith(
-                color: AppColors.primaryBlue,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'Cha-Ching',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2F6BFF),
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: _login,
-          child: const Text('Sign In'),
-        ),
-      ],
-    );
-  }
+            const SizedBox(height: 40),
 
-  Widget _buildSignUpText() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Don\'t have an account? ',
-          style: TextStyles.body2,
-        ),
-        TextButton(
-          onPressed: () {},
-          child: Text(
-            'Sign Up',
-            style: TextStyles.body2.copyWith(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.bold,
+            // Phone number
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF041C5C),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    '+63',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _phoneController,
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.phone,
+                    decoration: inputDecoration.copyWith(
+                      hintText: 'Enter phone number',
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
+            const SizedBox(height: 16),
 
-  void _login() {
-    // For demo purposes, navigate to OTP screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const OtpScreen(),
+            // Password
+            TextField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              style: const TextStyle(color: Colors.white),
+              decoration: inputDecoration.copyWith(
+                labelText: 'Password',
+                hintText: 'Enter password',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Forgot Password
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  // Handle forgot password
+                },
+                child: const Text(
+                  'Forgot your password?',
+                  style: TextStyle(color: Color(0xFF2F6BFF)),
+                ),
+              ),
+            ),
+
+            const Spacer(),
+
+            // Log In Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Validate inputs
+                  if (_phoneController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OtpVerificationScreen(
+                          phoneNumber: '+63 09XXXXXXXXX',
+                          isLogin: true,
+                        ),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please enter your phone number and password'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2F6BFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Log in',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }

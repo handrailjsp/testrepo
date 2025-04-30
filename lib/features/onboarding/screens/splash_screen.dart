@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../config/theme/app_colors.dart';
-import '../../../config/theme/text_styles.dart';
-import '../../auth/screens/login_screen.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -14,50 +12,56 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
-  }
-
-  void _navigateToLogin() {
+    // Auto-navigate after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.darkBackground,
-      body: Center(
-        child: Column(
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0C0C2C),
+        body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.account_balance_wallet,
-                color: Colors.white,
-                size: 60,
+            const Spacer(flex: 3),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2F6BFF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Cha-Ching',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Cha-Ching',
-              style: TextStyles.heading1,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your Mobile Banking App',
-              style: TextStyles.body1,
+            const Spacer(flex: 4),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 40),
+              child: Text(
+                'Tap anywhere to continue',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
             ),
           ],
         ),
